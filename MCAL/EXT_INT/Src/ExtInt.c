@@ -17,6 +17,5 @@ void ExtInt_Disable(Int_ID extIntID)
 }
 void ExtInt_SnsCtrlSet(Int_ID extIntID,Sense_Mode_ID intSense)
 {
-
 		EXTINT_MCUCR_REG|=intSense<<EXT_INT0_SENSE_BIT;
 }

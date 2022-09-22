@@ -3,22 +3,22 @@ On_demand_Traffic_Light_Control_Project.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         00000cce  00000000  00000000  00000094  2**1
+  0 .text         00000e72  00000000  00000000  00000094  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         00000004  00800060  00000cce  00000d62  2**0
+  1 .data         00000006  00800060  00000e72  00000f06  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .bss          00000002  00800064  00800064  00000d66  2**0
+  2 .bss          00000004  00800066  00800066  00000f0c  2**0
                   ALLOC
-  3 .stab         000018c0  00000000  00000000  00000d68  2**2
+  3 .stab         00001b6c  00000000  00000000  00000f0c  2**2
                   CONTENTS, READONLY, DEBUGGING
-  4 .stabstr      000013f1  00000000  00000000  00002628  2**0
+  4 .stabstr      0000143c  00000000  00000000  00002a78  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
 
 00000000 <__vectors>:
    0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
-   4:	0c 94 94 05 	jmp	0xb28	; 0xb28 <__vector_1>
+   4:	0c 94 d7 05 	jmp	0xbae	; 0xbae <__vector_1>
    8:	0c 94 47 00 	jmp	0x8e	; 0x8e <__bad_interrupt>
    c:	0c 94 47 00 	jmp	0x8e	; 0x8e <__bad_interrupt>
   10:	0c 94 47 00 	jmp	0x8e	; 0x8e <__bad_interrupt>
@@ -51,8 +51,8 @@ Disassembly of section .text:
   60:	10 e0       	ldi	r17, 0x00	; 0
   62:	a0 e6       	ldi	r26, 0x60	; 96
   64:	b0 e0       	ldi	r27, 0x00	; 0
-  66:	ee ec       	ldi	r30, 0xCE	; 206
-  68:	fc e0       	ldi	r31, 0x0C	; 12
+  66:	e2 e7       	ldi	r30, 0x72	; 114
+  68:	fe e0       	ldi	r31, 0x0E	; 14
   6a:	02 c0       	rjmp	.+4      	; 0x70 <.do_copy_data_start>
 
 0000006c <.do_copy_data_loop>:
@@ -60,13 +60,13 @@ Disassembly of section .text:
   6e:	0d 92       	st	X+, r0
 
 00000070 <.do_copy_data_start>:
-  70:	a4 36       	cpi	r26, 0x64	; 100
+  70:	a6 36       	cpi	r26, 0x66	; 102
   72:	b1 07       	cpc	r27, r17
   74:	d9 f7       	brne	.-10     	; 0x6c <.do_copy_data_loop>
 
 00000076 <__do_clear_bss>:
   76:	10 e0       	ldi	r17, 0x00	; 0
-  78:	a4 e6       	ldi	r26, 0x64	; 100
+  78:	a6 e6       	ldi	r26, 0x66	; 102
   7a:	b0 e0       	ldi	r27, 0x00	; 0
   7c:	01 c0       	rjmp	.+2      	; 0x80 <.do_clear_bss_start>
 
@@ -74,11 +74,11 @@ Disassembly of section .text:
   7e:	1d 92       	st	X+, r1
 
 00000080 <.do_clear_bss_start>:
-  80:	a6 36       	cpi	r26, 0x66	; 102
+  80:	aa 36       	cpi	r26, 0x6A	; 106
   82:	b1 07       	cpc	r27, r17
   84:	e1 f7       	brne	.-8      	; 0x7e <.do_clear_bss_loop>
-  86:	0e 94 5c 06 	call	0xcb8	; 0xcb8 <main>
-  8a:	0c 94 65 06 	jmp	0xcca	; 0xcca <_exit>
+  86:	0e 94 2e 07 	call	0xe5c	; 0xe5c <main>
+  8a:	0c 94 37 07 	jmp	0xe6e	; 0xe6e <_exit>
 
 0000008e <__bad_interrupt>:
   8e:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
@@ -340,7 +340,6 @@ void ExtInt_SnsCtrlSet(Int_ID extIntID,Sense_Mode_ID intSense)
  1dc:	de b7       	in	r29, 0x3e	; 62
  1de:	89 83       	std	Y+1, r24	; 0x01
  1e0:	6a 83       	std	Y+2, r22	; 0x02
-
 		EXTINT_MCUCR_REG|=intSense<<EXT_INT0_SENSE_BIT;
  1e2:	a5 e5       	ldi	r26, 0x55	; 85
  1e4:	b0 e0       	ldi	r27, 0x00	; 0
@@ -1629,8 +1628,8 @@ void Led_Toggle(Led_ID led)
 
 00000a0e <__vector_9>:
 volatile u8 count_Overflow_5s=1;
-
-
+volatile u8 INT0_Pressed =0;
+volatile u8 Entry_State=EXIT_PEDESTRIANS;
 
 ISR(TIMER1_OVF_vect)
 {
@@ -1655,422 +1654,656 @@ ISR(TIMER1_OVF_vect)
  a32:	cf 93       	push	r28
  a34:	cd b7       	in	r28, 0x3d	; 61
  a36:	de b7       	in	r29, 0x3e	; 62
+	DisableAllInterrupts();
+ a38:	0e 94 b9 00 	call	0x172	; 0x172 <DisableAllInterrupts>
 	Dio_FlipChannel(DIO_PORTC,DIO_CHANNEL0);
- a38:	82 e0       	ldi	r24, 0x02	; 2
- a3a:	60 e0       	ldi	r22, 0x00	; 0
- a3c:	0e 94 53 03 	call	0x6a6	; 0x6a6 <Dio_FlipChannel>
+ a3c:	82 e0       	ldi	r24, 0x02	; 2
+ a3e:	60 e0       	ldi	r22, 0x00	; 0
+ a40:	0e 94 53 03 	call	0x6a6	; 0x6a6 <Dio_FlipChannel>
+
 	if(Current_Mode==NORMAL_MODE)
- a40:	80 91 64 00 	lds	r24, 0x0064
- a44:	88 23       	and	r24, r24
- a46:	09 f0       	breq	.+2      	; 0xa4a <__vector_9+0x3c>
- a48:	53 c0       	rjmp	.+166    	; 0xaf0 <__vector_9+0xe2>
+ a44:	80 91 66 00 	lds	r24, 0x0066
+ a48:	88 23       	and	r24, r24
+ a4a:	09 f0       	breq	.+2      	; 0xa4e <__vector_9+0x40>
+ a4c:	41 c0       	rjmp	.+130    	; 0xad0 <__vector_9+0xc2>
 	{
 		if(current_car_led_state==YELLOW)
- a4a:	80 91 65 00 	lds	r24, 0x0065
- a4e:	81 30       	cpi	r24, 0x01	; 1
- a50:	19 f4       	brne	.+6      	; 0xa58 <__vector_9+0x4a>
+ a4e:	80 91 67 00 	lds	r24, 0x0067
+ a52:	81 30       	cpi	r24, 0x01	; 1
+ a54:	19 f4       	brne	.+6      	; 0xa5c <__vector_9+0x4e>
 		{
 			Led_Toggle(CAR_YELLOW_LED);
- a52:	81 e0       	ldi	r24, 0x01	; 1
- a54:	0e 94 b4 04 	call	0x968	; 0x968 <Led_Toggle>
+ a56:	81 e0       	ldi	r24, 0x01	; 1
+ a58:	0e 94 b4 04 	call	0x968	; 0x968 <Led_Toggle>
 		}
 
-		if(count_Overflow_5s==NUMBER_OF_OVERFLOW_FOR_5S && current_car_led_state==GREEN && previous_car_led_state==YELLOW)
- a58:	80 91 63 00 	lds	r24, 0x0063
- a5c:	8a 30       	cpi	r24, 0x0A	; 10
- a5e:	81 f4       	brne	.+32     	; 0xa80 <__vector_9+0x72>
- a60:	80 91 65 00 	lds	r24, 0x0065
- a64:	88 23       	and	r24, r24
- a66:	61 f4       	brne	.+24     	; 0xa80 <__vector_9+0x72>
- a68:	80 91 60 00 	lds	r24, 0x0060
- a6c:	81 30       	cpi	r24, 0x01	; 1
- a6e:	41 f4       	brne	.+16     	; 0xa80 <__vector_9+0x72>
+		if(count_Overflow_5s==NUMBER_OF_OVERFLOW_FOR_5S)
+ a5c:	80 91 64 00 	lds	r24, 0x0064
+ a60:	8a 30       	cpi	r24, 0x0A	; 10
+ a62:	09 f0       	breq	.+2      	; 0xa66 <__vector_9+0x58>
+ a64:	86 c0       	rjmp	.+268    	; 0xb72 <__vector_9+0x164>
 		{
-			previous_car_led_state =GREEN;
- a70:	10 92 60 00 	sts	0x0060, r1
-			current_car_led_state=YELLOW;
- a74:	81 e0       	ldi	r24, 0x01	; 1
- a76:	80 93 65 00 	sts	0x0065, r24
-			count_Overflow_5s=0;
- a7a:	10 92 63 00 	sts	0x0063, r1
- a7e:	38 c0       	rjmp	.+112    	; 0xaf0 <__vector_9+0xe2>
-		}
-		else if(count_Overflow_5s==NUMBER_OF_OVERFLOW_FOR_5S && current_car_led_state==YELLOW && (previous_car_led_state==GREEN || previous_car_led_state==RED))
- a80:	80 91 63 00 	lds	r24, 0x0063
- a84:	8a 30       	cpi	r24, 0x0A	; 10
- a86:	01 f5       	brne	.+64     	; 0xac8 <__vector_9+0xba>
- a88:	80 91 65 00 	lds	r24, 0x0065
- a8c:	81 30       	cpi	r24, 0x01	; 1
- a8e:	e1 f4       	brne	.+56     	; 0xac8 <__vector_9+0xba>
- a90:	80 91 60 00 	lds	r24, 0x0060
- a94:	88 23       	and	r24, r24
- a96:	21 f0       	breq	.+8      	; 0xaa0 <__vector_9+0x92>
- a98:	80 91 60 00 	lds	r24, 0x0060
- a9c:	82 30       	cpi	r24, 0x02	; 2
- a9e:	a1 f4       	brne	.+40     	; 0xac8 <__vector_9+0xba>
-		{
-			if(previous_car_led_state==GREEN)
- aa0:	80 91 60 00 	lds	r24, 0x0060
- aa4:	88 23       	and	r24, r24
- aa6:	21 f4       	brne	.+8      	; 0xab0 <__vector_9+0xa2>
+			if(current_car_led_state==GREEN && previous_car_led_state==YELLOW)
+ a66:	80 91 67 00 	lds	r24, 0x0067
+ a6a:	88 23       	and	r24, r24
+ a6c:	51 f4       	brne	.+20     	; 0xa82 <__vector_9+0x74>
+ a6e:	80 91 60 00 	lds	r24, 0x0060
+ a72:	81 30       	cpi	r24, 0x01	; 1
+ a74:	31 f4       	brne	.+12     	; 0xa82 <__vector_9+0x74>
 			{
-				current_car_led_state=RED;
- aa8:	82 e0       	ldi	r24, 0x02	; 2
- aaa:	80 93 65 00 	sts	0x0065, r24
- aae:	06 c0       	rjmp	.+12     	; 0xabc <__vector_9+0xae>
+				previous_car_led_state =GREEN;
+ a76:	10 92 60 00 	sts	0x0060, r1
+				current_car_led_state=YELLOW;
+ a7a:	81 e0       	ldi	r24, 0x01	; 1
+ a7c:	80 93 67 00 	sts	0x0067, r24
+ a80:	24 c0       	rjmp	.+72     	; 0xaca <__vector_9+0xbc>
 			}
-			else if(previous_car_led_state==RED)
- ab0:	80 91 60 00 	lds	r24, 0x0060
- ab4:	82 30       	cpi	r24, 0x02	; 2
- ab6:	11 f4       	brne	.+4      	; 0xabc <__vector_9+0xae>
+			else if(current_car_led_state==YELLOW)
+ a82:	80 91 67 00 	lds	r24, 0x0067
+ a86:	81 30       	cpi	r24, 0x01	; 1
+ a88:	91 f4       	brne	.+36     	; 0xaae <__vector_9+0xa0>
 			{
-				current_car_led_state=GREEN;
- ab8:	10 92 65 00 	sts	0x0065, r1
+				if(previous_car_led_state==GREEN)
+ a8a:	80 91 60 00 	lds	r24, 0x0060
+ a8e:	88 23       	and	r24, r24
+ a90:	21 f4       	brne	.+8      	; 0xa9a <__vector_9+0x8c>
+				{
+					current_car_led_state=RED;
+ a92:	82 e0       	ldi	r24, 0x02	; 2
+ a94:	80 93 67 00 	sts	0x0067, r24
+ a98:	06 c0       	rjmp	.+12     	; 0xaa6 <__vector_9+0x98>
+				}
+				else if(previous_car_led_state==RED)
+ a9a:	80 91 60 00 	lds	r24, 0x0060
+ a9e:	82 30       	cpi	r24, 0x02	; 2
+ aa0:	11 f4       	brne	.+4      	; 0xaa6 <__vector_9+0x98>
+				{
+					current_car_led_state=GREEN;
+ aa2:	10 92 67 00 	sts	0x0067, r1
+				}
+				previous_car_led_state =YELLOW;
+ aa6:	81 e0       	ldi	r24, 0x01	; 1
+ aa8:	80 93 60 00 	sts	0x0060, r24
+ aac:	0e c0       	rjmp	.+28     	; 0xaca <__vector_9+0xbc>
 			}
-			previous_car_led_state =YELLOW;
- abc:	81 e0       	ldi	r24, 0x01	; 1
- abe:	80 93 60 00 	sts	0x0060, r24
+			else if(current_car_led_state==RED && previous_car_led_state==YELLOW)
+ aae:	80 91 67 00 	lds	r24, 0x0067
+ ab2:	82 30       	cpi	r24, 0x02	; 2
+ ab4:	51 f4       	brne	.+20     	; 0xaca <__vector_9+0xbc>
+ ab6:	80 91 60 00 	lds	r24, 0x0060
+ aba:	81 30       	cpi	r24, 0x01	; 1
+ abc:	31 f4       	brne	.+12     	; 0xaca <__vector_9+0xbc>
+			{
+				previous_car_led_state=RED;
+ abe:	82 e0       	ldi	r24, 0x02	; 2
+ ac0:	80 93 60 00 	sts	0x0060, r24
+				current_car_led_state=YELLOW;
+ ac4:	81 e0       	ldi	r24, 0x01	; 1
+ ac6:	80 93 67 00 	sts	0x0067, r24
+			}
 			count_Overflow_5s=0;
- ac2:	10 92 63 00 	sts	0x0063, r1
- ac6:	14 c0       	rjmp	.+40     	; 0xaf0 <__vector_9+0xe2>
-		}
-		else if(count_Overflow_5s==NUMBER_OF_OVERFLOW_FOR_5S && current_car_led_state==RED && previous_car_led_state==YELLOW)
- ac8:	80 91 63 00 	lds	r24, 0x0063
- acc:	8a 30       	cpi	r24, 0x0A	; 10
- ace:	81 f4       	brne	.+32     	; 0xaf0 <__vector_9+0xe2>
- ad0:	80 91 65 00 	lds	r24, 0x0065
- ad4:	82 30       	cpi	r24, 0x02	; 2
- ad6:	61 f4       	brne	.+24     	; 0xaf0 <__vector_9+0xe2>
- ad8:	80 91 60 00 	lds	r24, 0x0060
- adc:	81 30       	cpi	r24, 0x01	; 1
- ade:	41 f4       	brne	.+16     	; 0xaf0 <__vector_9+0xe2>
-		{
-			previous_car_led_state=RED;
- ae0:	82 e0       	ldi	r24, 0x02	; 2
- ae2:	80 93 60 00 	sts	0x0060, r24
-			current_car_led_state=YELLOW;
- ae6:	81 e0       	ldi	r24, 0x01	; 1
- ae8:	80 93 65 00 	sts	0x0065, r24
-			count_Overflow_5s=0;
- aec:	10 92 63 00 	sts	0x0063, r1
+ aca:	10 92 64 00 	sts	0x0064, r1
+ ace:	51 c0       	rjmp	.+162    	; 0xb72 <__vector_9+0x164>
 		}
 	}
-	TIMER1_SetPreload(TIMER1_500ms_PRELOAD);
- af0:	8a e7       	ldi	r24, 0x7A	; 122
- af2:	91 ee       	ldi	r25, 0xE1	; 225
- af4:	0e 94 7c 00 	call	0xf8	; 0xf8 <TIMER1_SetPreload>
-	count_Overflow_5s++;
- af8:	80 91 63 00 	lds	r24, 0x0063
- afc:	8f 5f       	subi	r24, 0xFF	; 255
- afe:	80 93 63 00 	sts	0x0063, r24
-}
- b02:	cf 91       	pop	r28
- b04:	df 91       	pop	r29
- b06:	ff 91       	pop	r31
- b08:	ef 91       	pop	r30
- b0a:	bf 91       	pop	r27
- b0c:	af 91       	pop	r26
- b0e:	9f 91       	pop	r25
- b10:	8f 91       	pop	r24
- b12:	7f 91       	pop	r23
- b14:	6f 91       	pop	r22
- b16:	5f 91       	pop	r21
- b18:	4f 91       	pop	r20
- b1a:	3f 91       	pop	r19
- b1c:	2f 91       	pop	r18
- b1e:	0f 90       	pop	r0
- b20:	0f be       	out	0x3f, r0	; 63
- b22:	0f 90       	pop	r0
- b24:	1f 90       	pop	r1
- b26:	18 95       	reti
+	else if(Current_Mode==PEDESTRIANS_MODE)
+ ad0:	80 91 66 00 	lds	r24, 0x0066
+ ad4:	81 30       	cpi	r24, 0x01	; 1
+ ad6:	09 f0       	breq	.+2      	; 0xada <__vector_9+0xcc>
+ ad8:	4c c0       	rjmp	.+152    	; 0xb72 <__vector_9+0x164>
+	{
+		if(current_peds_led_state==YELLOW)
+ ada:	80 91 61 00 	lds	r24, 0x0061
+ ade:	81 30       	cpi	r24, 0x01	; 1
+ ae0:	51 f4       	brne	.+20     	; 0xaf6 <__vector_9+0xe8>
+		{
+			Led_Toggle(CAR_YELLOW_LED);
+ ae2:	81 e0       	ldi	r24, 0x01	; 1
+ ae4:	0e 94 b4 04 	call	0x968	; 0x968 <Led_Toggle>
+			Led_Toggle(PEDESTRIANS_YELLOW_LED);
+ ae8:	84 e0       	ldi	r24, 0x04	; 4
+ aea:	0e 94 b4 04 	call	0x968	; 0x968 <Led_Toggle>
+			Dio_FlipChannel(DIO_PORTC,DIO_CHANNEL2);
+ aee:	82 e0       	ldi	r24, 0x02	; 2
+ af0:	62 e0       	ldi	r22, 0x02	; 2
+ af2:	0e 94 53 03 	call	0x6a6	; 0x6a6 <Dio_FlipChannel>
+		}
+		if(count_Overflow_5s==NUMBER_OF_OVERFLOW_FOR_5S)
+ af6:	80 91 64 00 	lds	r24, 0x0064
+ afa:	8a 30       	cpi	r24, 0x0A	; 10
+ afc:	d1 f5       	brne	.+116    	; 0xb72 <__vector_9+0x164>
+		{
+			if(current_peds_led_state==YELLOW && previous_car_led_state==RED && previous_peds_led_state==GREEN)
+ afe:	80 91 61 00 	lds	r24, 0x0061
+ b02:	81 30       	cpi	r24, 0x01	; 1
+ b04:	b1 f4       	brne	.+44     	; 0xb32 <__vector_9+0x124>
+ b06:	80 91 60 00 	lds	r24, 0x0060
+ b0a:	82 30       	cpi	r24, 0x02	; 2
+ b0c:	91 f4       	brne	.+36     	; 0xb32 <__vector_9+0x124>
+ b0e:	80 91 62 00 	lds	r24, 0x0062
+ b12:	88 23       	and	r24, r24
+ b14:	71 f4       	brne	.+28     	; 0xb32 <__vector_9+0x124>
+			{
+				previous_peds_led_state=YELLOW;
+ b16:	81 e0       	ldi	r24, 0x01	; 1
+ b18:	80 93 62 00 	sts	0x0062, r24
+				previous_peds_led_state2=GREEN;
+ b1c:	10 92 63 00 	sts	0x0063, r1
+				previous_car_led_state=YELLOW;
+ b20:	81 e0       	ldi	r24, 0x01	; 1
+ b22:	80 93 60 00 	sts	0x0060, r24
+				current_car_led_state=GREEN;
+ b26:	10 92 67 00 	sts	0x0067, r1
+				current_peds_led_state=RED;
+ b2a:	82 e0       	ldi	r24, 0x02	; 2
+ b2c:	80 93 61 00 	sts	0x0061, r24
+ b30:	1e c0       	rjmp	.+60     	; 0xb6e <__vector_9+0x160>
+			}
+			else if(current_peds_led_state==GREEN)
+ b32:	80 91 61 00 	lds	r24, 0x0061
+ b36:	88 23       	and	r24, r24
+ b38:	61 f4       	brne	.+24     	; 0xb52 <__vector_9+0x144>
+			{
+				previous_peds_led_state=GREEN;
+ b3a:	10 92 62 00 	sts	0x0062, r1
+				previous_car_led_state=RED;
+ b3e:	82 e0       	ldi	r24, 0x02	; 2
+ b40:	80 93 60 00 	sts	0x0060, r24
 
-00000b28 <__vector_1>:
+				current_car_led_state=YELLOW;
+ b44:	81 e0       	ldi	r24, 0x01	; 1
+ b46:	80 93 67 00 	sts	0x0067, r24
+				current_peds_led_state=YELLOW;
+ b4a:	81 e0       	ldi	r24, 0x01	; 1
+ b4c:	80 93 61 00 	sts	0x0061, r24
+ b50:	0e c0       	rjmp	.+28     	; 0xb6e <__vector_9+0x160>
+			}
+
+			else if(current_peds_led_state==YELLOW)
+ b52:	80 91 61 00 	lds	r24, 0x0061
+ b56:	81 30       	cpi	r24, 0x01	; 1
+ b58:	19 f4       	brne	.+6      	; 0xb60 <__vector_9+0x152>
+			{
+				current_peds_led_state=GREEN;
+ b5a:	10 92 61 00 	sts	0x0061, r1
+ b5e:	07 c0       	rjmp	.+14     	; 0xb6e <__vector_9+0x160>
+			}
+			else if(current_peds_led_state==RED)
+ b60:	80 91 61 00 	lds	r24, 0x0061
+ b64:	82 30       	cpi	r24, 0x02	; 2
+ b66:	19 f4       	brne	.+6      	; 0xb6e <__vector_9+0x160>
+			{
+				current_peds_led_state=YELLOW;
+ b68:	81 e0       	ldi	r24, 0x01	; 1
+ b6a:	80 93 61 00 	sts	0x0061, r24
+			}
+
+			count_Overflow_5s=0;
+ b6e:	10 92 64 00 	sts	0x0064, r1
+		}
+	}
+
+	count_Overflow_5s++;
+ b72:	80 91 64 00 	lds	r24, 0x0064
+ b76:	8f 5f       	subi	r24, 0xFF	; 255
+ b78:	80 93 64 00 	sts	0x0064, r24
+	TIMER1_SetPreload(TIMER1_500ms_PRELOAD);
+ b7c:	8a e7       	ldi	r24, 0x7A	; 122
+ b7e:	91 ee       	ldi	r25, 0xE1	; 225
+ b80:	0e 94 7c 00 	call	0xf8	; 0xf8 <TIMER1_SetPreload>
+	EnableAllInterrupts();
+ b84:	0e 94 aa 00 	call	0x154	; 0x154 <EnableAllInterrupts>
+}
+ b88:	cf 91       	pop	r28
+ b8a:	df 91       	pop	r29
+ b8c:	ff 91       	pop	r31
+ b8e:	ef 91       	pop	r30
+ b90:	bf 91       	pop	r27
+ b92:	af 91       	pop	r26
+ b94:	9f 91       	pop	r25
+ b96:	8f 91       	pop	r24
+ b98:	7f 91       	pop	r23
+ b9a:	6f 91       	pop	r22
+ b9c:	5f 91       	pop	r21
+ b9e:	4f 91       	pop	r20
+ ba0:	3f 91       	pop	r19
+ ba2:	2f 91       	pop	r18
+ ba4:	0f 90       	pop	r0
+ ba6:	0f be       	out	0x3f, r0	; 63
+ ba8:	0f 90       	pop	r0
+ baa:	1f 90       	pop	r1
+ bac:	18 95       	reti
+
+00000bae <__vector_1>:
 
 ISR(INT0_vect)
 {
- b28:	1f 92       	push	r1
- b2a:	0f 92       	push	r0
- b2c:	0f b6       	in	r0, 0x3f	; 63
- b2e:	0f 92       	push	r0
- b30:	11 24       	eor	r1, r1
- b32:	2f 93       	push	r18
- b34:	3f 93       	push	r19
- b36:	4f 93       	push	r20
- b38:	5f 93       	push	r21
- b3a:	6f 93       	push	r22
- b3c:	7f 93       	push	r23
- b3e:	8f 93       	push	r24
- b40:	9f 93       	push	r25
- b42:	af 93       	push	r26
- b44:	bf 93       	push	r27
- b46:	ef 93       	push	r30
- b48:	ff 93       	push	r31
- b4a:	df 93       	push	r29
- b4c:	cf 93       	push	r28
- b4e:	cd b7       	in	r28, 0x3d	; 61
- b50:	de b7       	in	r29, 0x3e	; 62
+ bae:	1f 92       	push	r1
+ bb0:	0f 92       	push	r0
+ bb2:	0f b6       	in	r0, 0x3f	; 63
+ bb4:	0f 92       	push	r0
+ bb6:	11 24       	eor	r1, r1
+ bb8:	2f 93       	push	r18
+ bba:	3f 93       	push	r19
+ bbc:	4f 93       	push	r20
+ bbe:	5f 93       	push	r21
+ bc0:	6f 93       	push	r22
+ bc2:	7f 93       	push	r23
+ bc4:	8f 93       	push	r24
+ bc6:	9f 93       	push	r25
+ bc8:	af 93       	push	r26
+ bca:	bf 93       	push	r27
+ bcc:	ef 93       	push	r30
+ bce:	ff 93       	push	r31
+ bd0:	df 93       	push	r29
+ bd2:	cf 93       	push	r28
+ bd4:	cd b7       	in	r28, 0x3d	; 61
+ bd6:	de b7       	in	r29, 0x3e	; 62
 	DisableAllInterrupts();
- b52:	0e 94 b9 00 	call	0x172	; 0x172 <DisableAllInterrupts>
-	Current_Mode=PEDESTRIANS_MODE;
- b56:	81 e0       	ldi	r24, 0x01	; 1
- b58:	80 93 64 00 	sts	0x0064, r24
+ bd8:	0e 94 b9 00 	call	0x172	; 0x172 <DisableAllInterrupts>
+	if(current_car_led_state==RED && current_peds_led_state!=GREEN && INT0_Pressed==0)
+ bdc:	80 91 67 00 	lds	r24, 0x0067
+ be0:	82 30       	cpi	r24, 0x02	; 2
+ be2:	d1 f4       	brne	.+52     	; 0xc18 <__vector_1+0x6a>
+ be4:	80 91 61 00 	lds	r24, 0x0061
+ be8:	88 23       	and	r24, r24
+ bea:	b1 f0       	breq	.+44     	; 0xc18 <__vector_1+0x6a>
+ bec:	80 91 68 00 	lds	r24, 0x0068
+ bf0:	88 23       	and	r24, r24
+ bf2:	91 f4       	brne	.+36     	; 0xc18 <__vector_1+0x6a>
+	{
+
+		current_peds_led_state=GREEN;
+ bf4:	10 92 61 00 	sts	0x0061, r1
+
+		Current_Mode=PEDESTRIANS_MODE;
+ bf8:	81 e0       	ldi	r24, 0x01	; 1
+ bfa:	80 93 66 00 	sts	0x0066, r24
+		Entry_State=ENTER_PEDESTRIANS;
+ bfe:	81 e0       	ldi	r24, 0x01	; 1
+ c00:	80 93 69 00 	sts	0x0069, r24
+
+		TIMER1_Stop();
+ c04:	0e 94 6e 00 	call	0xdc	; 0xdc <TIMER1_Stop>
+		TIMER1_SetPreload(TIMER1_500ms_PRELOAD);
+ c08:	8a e7       	ldi	r24, 0x7A	; 122
+ c0a:	91 ee       	ldi	r25, 0xE1	; 225
+ c0c:	0e 94 7c 00 	call	0xf8	; 0xf8 <TIMER1_SetPreload>
+		TIMER1_Start(TIMER1_CS_1024_PRESCALER);
+ c10:	85 e0       	ldi	r24, 0x05	; 5
+ c12:	0e 94 5c 00 	call	0xb8	; 0xb8 <TIMER1_Start>
+ c16:	15 c0       	rjmp	.+42     	; 0xc42 <__vector_1+0x94>
+	}
+	else if((current_car_led_state==YELLOW || current_car_led_state==GREEN) && INT0_Pressed==0)
+ c18:	80 91 67 00 	lds	r24, 0x0067
+ c1c:	81 30       	cpi	r24, 0x01	; 1
+ c1e:	21 f0       	breq	.+8      	; 0xc28 <__vector_1+0x7a>
+ c20:	80 91 67 00 	lds	r24, 0x0067
+ c24:	88 23       	and	r24, r24
+ c26:	69 f4       	brne	.+26     	; 0xc42 <__vector_1+0x94>
+ c28:	80 91 68 00 	lds	r24, 0x0068
+ c2c:	88 23       	and	r24, r24
+ c2e:	49 f4       	brne	.+18     	; 0xc42 <__vector_1+0x94>
+	{
+		current_peds_led_state=RED;
+ c30:	82 e0       	ldi	r24, 0x02	; 2
+ c32:	80 93 61 00 	sts	0x0061, r24
+		Current_Mode=PEDESTRIANS_MODE;
+ c36:	81 e0       	ldi	r24, 0x01	; 1
+ c38:	80 93 66 00 	sts	0x0066, r24
+		Entry_State=ENTER_PEDESTRIANS;
+ c3c:	81 e0       	ldi	r24, 0x01	; 1
+ c3e:	80 93 69 00 	sts	0x0069, r24
+	}
+		INT0_Pressed=1;
+ c42:	81 e0       	ldi	r24, 0x01	; 1
+ c44:	80 93 68 00 	sts	0x0068, r24
 	EnableAllInterrupts();
- b5c:	0e 94 aa 00 	call	0x154	; 0x154 <EnableAllInterrupts>
+ c48:	0e 94 aa 00 	call	0x154	; 0x154 <EnableAllInterrupts>
 }
- b60:	cf 91       	pop	r28
- b62:	df 91       	pop	r29
- b64:	ff 91       	pop	r31
- b66:	ef 91       	pop	r30
- b68:	bf 91       	pop	r27
- b6a:	af 91       	pop	r26
- b6c:	9f 91       	pop	r25
- b6e:	8f 91       	pop	r24
- b70:	7f 91       	pop	r23
- b72:	6f 91       	pop	r22
- b74:	5f 91       	pop	r21
- b76:	4f 91       	pop	r20
- b78:	3f 91       	pop	r19
- b7a:	2f 91       	pop	r18
- b7c:	0f 90       	pop	r0
- b7e:	0f be       	out	0x3f, r0	; 63
- b80:	0f 90       	pop	r0
- b82:	1f 90       	pop	r1
- b84:	18 95       	reti
+ c4c:	cf 91       	pop	r28
+ c4e:	df 91       	pop	r29
+ c50:	ff 91       	pop	r31
+ c52:	ef 91       	pop	r30
+ c54:	bf 91       	pop	r27
+ c56:	af 91       	pop	r26
+ c58:	9f 91       	pop	r25
+ c5a:	8f 91       	pop	r24
+ c5c:	7f 91       	pop	r23
+ c5e:	6f 91       	pop	r22
+ c60:	5f 91       	pop	r21
+ c62:	4f 91       	pop	r20
+ c64:	3f 91       	pop	r19
+ c66:	2f 91       	pop	r18
+ c68:	0f 90       	pop	r0
+ c6a:	0f be       	out	0x3f, r0	; 63
+ c6c:	0f 90       	pop	r0
+ c6e:	1f 90       	pop	r1
+ c70:	18 95       	reti
 
-00000b86 <Normal_Mode>:
-
+00000c72 <Normal_Mode>:
 
 void Normal_Mode(void)
 {
- b86:	df 93       	push	r29
- b88:	cf 93       	push	r28
- b8a:	cd b7       	in	r28, 0x3d	; 61
- b8c:	de b7       	in	r29, 0x3e	; 62
- b8e:	39 c0       	rjmp	.+114    	; 0xc02 <Normal_Mode+0x7c>
-	while(Current_Mode==NORMAL_MODE)
+ c72:	df 93       	push	r29
+ c74:	cf 93       	push	r28
+ c76:	cd b7       	in	r28, 0x3d	; 61
+ c78:	de b7       	in	r29, 0x3e	; 62
+	if(Current_Mode==NORMAL_MODE)
+ c7a:	80 91 66 00 	lds	r24, 0x0066
+ c7e:	88 23       	and	r24, r24
+ c80:	01 f5       	brne	.+64     	; 0xcc2 <Normal_Mode+0x50>
 	{
-		if(current_car_led_state==GREEN && Current_Mode==NORMAL_MODE)
- b90:	80 91 65 00 	lds	r24, 0x0065
- b94:	88 23       	and	r24, r24
- b96:	71 f4       	brne	.+28     	; 0xbb4 <Normal_Mode+0x2e>
- b98:	80 91 64 00 	lds	r24, 0x0064
- b9c:	88 23       	and	r24, r24
- b9e:	51 f4       	brne	.+20     	; 0xbb4 <Normal_Mode+0x2e>
+		if(current_car_led_state==GREEN)
+ c82:	80 91 67 00 	lds	r24, 0x0067
+ c86:	88 23       	and	r24, r24
+ c88:	39 f4       	brne	.+14     	; 0xc98 <Normal_Mode+0x26>
 		{
-			TIMER1_Start(TIMER1_CS_1024_PRESCALER);
- ba0:	85 e0       	ldi	r24, 0x05	; 5
- ba2:	0e 94 5c 00 	call	0xb8	; 0xb8 <TIMER1_Start>
 			Led_OFF(CAR_YELLOW_LED);
- ba6:	81 e0       	ldi	r24, 0x01	; 1
- ba8:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+ c8a:	81 e0       	ldi	r24, 0x01	; 1
+ c8c:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
 			Led_ON(CAR_GREEN_LED);
- bac:	80 e0       	ldi	r24, 0x00	; 0
- bae:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
- bb2:	27 c0       	rjmp	.+78     	; 0xc02 <Normal_Mode+0x7c>
+ c90:	80 e0       	ldi	r24, 0x00	; 0
+ c92:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
+ c96:	15 c0       	rjmp	.+42     	; 0xcc2 <Normal_Mode+0x50>
 		}
-		else if(current_car_led_state==YELLOW && Current_Mode==NORMAL_MODE)
- bb4:	80 91 65 00 	lds	r24, 0x0065
- bb8:	81 30       	cpi	r24, 0x01	; 1
- bba:	59 f4       	brne	.+22     	; 0xbd2 <Normal_Mode+0x4c>
- bbc:	80 91 64 00 	lds	r24, 0x0064
- bc0:	88 23       	and	r24, r24
- bc2:	39 f4       	brne	.+14     	; 0xbd2 <Normal_Mode+0x4c>
+		else if(current_car_led_state==YELLOW)
+ c98:	80 91 67 00 	lds	r24, 0x0067
+ c9c:	81 30       	cpi	r24, 0x01	; 1
+ c9e:	39 f4       	brne	.+14     	; 0xcae <Normal_Mode+0x3c>
 		{
 			Led_OFF(CAR_GREEN_LED);
- bc4:	80 e0       	ldi	r24, 0x00	; 0
- bc6:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+ ca0:	80 e0       	ldi	r24, 0x00	; 0
+ ca2:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
 			Led_OFF(CAR_RED_LED);
- bca:	82 e0       	ldi	r24, 0x02	; 2
- bcc:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
- bd0:	18 c0       	rjmp	.+48     	; 0xc02 <Normal_Mode+0x7c>
+ ca6:	82 e0       	ldi	r24, 0x02	; 2
+ ca8:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+ cac:	0a c0       	rjmp	.+20     	; 0xcc2 <Normal_Mode+0x50>
 		}
-		else if(current_car_led_state==RED && Current_Mode==NORMAL_MODE)
- bd2:	80 91 65 00 	lds	r24, 0x0065
- bd6:	82 30       	cpi	r24, 0x02	; 2
- bd8:	59 f4       	brne	.+22     	; 0xbf0 <Normal_Mode+0x6a>
- bda:	80 91 64 00 	lds	r24, 0x0064
- bde:	88 23       	and	r24, r24
- be0:	39 f4       	brne	.+14     	; 0xbf0 <Normal_Mode+0x6a>
+		else if(current_car_led_state==RED)
+ cae:	80 91 67 00 	lds	r24, 0x0067
+ cb2:	82 30       	cpi	r24, 0x02	; 2
+ cb4:	31 f4       	brne	.+12     	; 0xcc2 <Normal_Mode+0x50>
 		{
 			Led_OFF(CAR_YELLOW_LED);
- be2:	81 e0       	ldi	r24, 0x01	; 1
- be4:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+ cb6:	81 e0       	ldi	r24, 0x01	; 1
+ cb8:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
 			Led_ON(CAR_RED_LED);
- be8:	82 e0       	ldi	r24, 0x02	; 2
- bea:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
- bee:	09 c0       	rjmp	.+18     	; 0xc02 <Normal_Mode+0x7c>
-		}
-		else
-		{
-			Led_OFF(CAR_GREEN_LED);
- bf0:	80 e0       	ldi	r24, 0x00	; 0
- bf2:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
-			Led_OFF(CAR_YELLOW_LED);
- bf6:	81 e0       	ldi	r24, 0x01	; 1
- bf8:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
-			Led_OFF(CAR_RED_LED);
- bfc:	82 e0       	ldi	r24, 0x02	; 2
- bfe:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
-}
-
-
-void Normal_Mode(void)
-{
-	while(Current_Mode==NORMAL_MODE)
- c02:	80 91 64 00 	lds	r24, 0x0064
- c06:	88 23       	and	r24, r24
- c08:	19 f2       	breq	.-122    	; 0xb90 <Normal_Mode+0xa>
-			Led_OFF(CAR_YELLOW_LED);
-			Led_OFF(CAR_RED_LED);
-
+ cbc:	82 e0       	ldi	r24, 0x02	; 2
+ cbe:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
 		}
 	}
 }
- c0a:	cf 91       	pop	r28
- c0c:	df 91       	pop	r29
- c0e:	08 95       	ret
+ cc2:	cf 91       	pop	r28
+ cc4:	df 91       	pop	r29
+ cc6:	08 95       	ret
 
-00000c10 <Pedestrian_Mode>:
+00000cc8 <Pedestrian_Mode>:
 
 void Pedestrian_Mode(void)
 {
- c10:	df 93       	push	r29
- c12:	cf 93       	push	r28
- c14:	cd b7       	in	r28, 0x3d	; 61
- c16:	de b7       	in	r29, 0x3e	; 62
- c18:	19 c0       	rjmp	.+50     	; 0xc4c <Pedestrian_Mode+0x3c>
-	while(Current_Mode==PEDESTRIANS_MODE)
+ cc8:	df 93       	push	r29
+ cca:	cf 93       	push	r28
+ ccc:	cd b7       	in	r28, 0x3d	; 61
+ cce:	de b7       	in	r29, 0x3e	; 62
+	if(Current_Mode==PEDESTRIANS_MODE)
+ cd0:	80 91 66 00 	lds	r24, 0x0066
+ cd4:	81 30       	cpi	r24, 0x01	; 1
+ cd6:	09 f0       	breq	.+2      	; 0xcda <Pedestrian_Mode+0x12>
+ cd8:	87 c0       	rjmp	.+270    	; 0xde8 <Pedestrian_Mode+0x120>
 	{
-		if(current_car_led_state==RED)
- c1a:	80 91 65 00 	lds	r24, 0x0065
- c1e:	82 30       	cpi	r24, 0x02	; 2
- c20:	91 f4       	brne	.+36     	; 0xc46 <Pedestrian_Mode+0x36>
+		if(previous_peds_led_state==YELLOW &&
+ cda:	80 91 62 00 	lds	r24, 0x0062
+ cde:	81 30       	cpi	r24, 0x01	; 1
+ ce0:	31 f5       	brne	.+76     	; 0xd2e <Pedestrian_Mode+0x66>
+ ce2:	80 91 63 00 	lds	r24, 0x0063
+ ce6:	88 23       	and	r24, r24
+ ce8:	11 f5       	brne	.+68     	; 0xd2e <Pedestrian_Mode+0x66>
+ cea:	80 91 60 00 	lds	r24, 0x0060
+ cee:	81 30       	cpi	r24, 0x01	; 1
+ cf0:	f1 f4       	brne	.+60     	; 0xd2e <Pedestrian_Mode+0x66>
+ cf2:	80 91 67 00 	lds	r24, 0x0067
+ cf6:	88 23       	and	r24, r24
+ cf8:	d1 f4       	brne	.+52     	; 0xd2e <Pedestrian_Mode+0x66>
+ cfa:	80 91 61 00 	lds	r24, 0x0061
+ cfe:	82 30       	cpi	r24, 0x02	; 2
+ d00:	b1 f4       	brne	.+44     	; 0xd2e <Pedestrian_Mode+0x66>
+ d02:	80 91 69 00 	lds	r24, 0x0069
+ d06:	81 30       	cpi	r24, 0x01	; 1
+ d08:	91 f4       	brne	.+36     	; 0xd2e <Pedestrian_Mode+0x66>
+				previous_peds_led_state2==GREEN &&
+				previous_car_led_state==YELLOW &&
+				current_car_led_state==GREEN &&
+				current_peds_led_state==RED && Entry_State==ENTER_PEDESTRIANS)
 		{
-			TIMER1_Stop();
- c22:	0e 94 6e 00 	call	0xdc	; 0xdc <TIMER1_Stop>
-			TIMER1_Start(TIMER1_CS_1024_PRESCALER);
- c26:	85 e0       	ldi	r24, 0x05	; 5
- c28:	0e 94 5c 00 	call	0xb8	; 0xb8 <TIMER1_Start>
+			Led_OFF(PEDESTRIANS_YELLOW_LED);
+ d0a:	84 e0       	ldi	r24, 0x04	; 4
+ d0c:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
 			Led_OFF(CAR_YELLOW_LED);
- c2c:	81 e0       	ldi	r24, 0x01	; 1
- c2e:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
-			Led_OFF(CAR_GREEN_LED);
- c32:	80 e0       	ldi	r24, 0x00	; 0
- c34:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+ d10:	81 e0       	ldi	r24, 0x01	; 1
+ d12:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+			Led_OFF(PEDESTRIANS_GREEN_LED);
+ d16:	83 e0       	ldi	r24, 0x03	; 3
+ d18:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+
+			Led_ON(PEDESTRIANS_RED_LED);
+ d1c:	85 e0       	ldi	r24, 0x05	; 5
+ d1e:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
+			Led_ON(CAR_GREEN_LED);
+ d22:	80 e0       	ldi	r24, 0x00	; 0
+ d24:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
+
+			INT0_Pressed=0;
+ d28:	10 92 68 00 	sts	0x0068, r1
+ d2c:	5d c0       	rjmp	.+186    	; 0xde8 <Pedestrian_Mode+0x120>
+		}
+		else if(previous_peds_led_state==YELLOW &&
+ d2e:	80 91 62 00 	lds	r24, 0x0062
+ d32:	81 30       	cpi	r24, 0x01	; 1
+ d34:	41 f5       	brne	.+80     	; 0xd86 <Pedestrian_Mode+0xbe>
+ d36:	80 91 63 00 	lds	r24, 0x0063
+ d3a:	88 23       	and	r24, r24
+ d3c:	21 f5       	brne	.+72     	; 0xd86 <Pedestrian_Mode+0xbe>
+ d3e:	80 91 60 00 	lds	r24, 0x0060
+ d42:	81 30       	cpi	r24, 0x01	; 1
+ d44:	01 f5       	brne	.+64     	; 0xd86 <Pedestrian_Mode+0xbe>
+ d46:	80 91 67 00 	lds	r24, 0x0067
+ d4a:	88 23       	and	r24, r24
+ d4c:	e1 f4       	brne	.+56     	; 0xd86 <Pedestrian_Mode+0xbe>
+ d4e:	80 91 61 00 	lds	r24, 0x0061
+ d52:	82 30       	cpi	r24, 0x02	; 2
+ d54:	c1 f4       	brne	.+48     	; 0xd86 <Pedestrian_Mode+0xbe>
+ d56:	80 91 69 00 	lds	r24, 0x0069
+ d5a:	88 23       	and	r24, r24
+ d5c:	a1 f4       	brne	.+40     	; 0xd86 <Pedestrian_Mode+0xbe>
+				previous_peds_led_state2==GREEN &&
+				previous_car_led_state==YELLOW &&
+				current_car_led_state==GREEN &&
+				current_peds_led_state==RED&& Entry_State==EXIT_PEDESTRIANS)
+		{
+			Led_OFF(PEDESTRIANS_YELLOW_LED);
+ d5e:	84 e0       	ldi	r24, 0x04	; 4
+ d60:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+			Led_OFF(CAR_YELLOW_LED);
+ d64:	81 e0       	ldi	r24, 0x01	; 1
+ d66:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+			Led_OFF(PEDESTRIANS_GREEN_LED);
+ d6a:	83 e0       	ldi	r24, 0x03	; 3
+ d6c:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+
+			Led_ON(PEDESTRIANS_RED_LED);
+ d70:	85 e0       	ldi	r24, 0x05	; 5
+ d72:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
+			Led_ON(CAR_GREEN_LED);
+ d76:	80 e0       	ldi	r24, 0x00	; 0
+ d78:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
+
+			Current_Mode=NORMAL_MODE;
+ d7c:	10 92 66 00 	sts	0x0066, r1
+			INT0_Pressed=0;
+ d80:	10 92 68 00 	sts	0x0068, r1
+ d84:	31 c0       	rjmp	.+98     	; 0xde8 <Pedestrian_Mode+0x120>
+		}
+		else if(current_peds_led_state==GREEN )
+ d86:	80 91 61 00 	lds	r24, 0x0061
+ d8a:	88 23       	and	r24, r24
+ d8c:	81 f4       	brne	.+32     	; 0xdae <Pedestrian_Mode+0xe6>
+		{
+			Led_OFF(CAR_YELLOW_LED);
+ d8e:	81 e0       	ldi	r24, 0x01	; 1
+ d90:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+			Led_OFF(PEDESTRIANS_YELLOW_LED);
+ d94:	84 e0       	ldi	r24, 0x04	; 4
+ d96:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+			Led_OFF(PEDESTRIANS_RED_LED);
+ d9a:	85 e0       	ldi	r24, 0x05	; 5
+ d9c:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+
 			Led_ON(CAR_RED_LED);
- c38:	82 e0       	ldi	r24, 0x02	; 2
- c3a:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
+ da0:	82 e0       	ldi	r24, 0x02	; 2
+ da2:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
 			Led_ON(PEDESTRIANS_GREEN_LED);
- c3e:	83 e0       	ldi	r24, 0x03	; 3
- c40:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
- c44:	03 c0       	rjmp	.+6      	; 0xc4c <Pedestrian_Mode+0x3c>
+ da6:	83 e0       	ldi	r24, 0x03	; 3
+ da8:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
+ dac:	1d c0       	rjmp	.+58     	; 0xde8 <Pedestrian_Mode+0x120>
 		}
-		else
+		else if(current_peds_led_state==YELLOW)
+ dae:	80 91 61 00 	lds	r24, 0x0061
+ db2:	81 30       	cpi	r24, 0x01	; 1
+ db4:	61 f4       	brne	.+24     	; 0xdce <Pedestrian_Mode+0x106>
 		{
+			Led_OFF(CAR_RED_LED);
+ db6:	82 e0       	ldi	r24, 0x02	; 2
+ db8:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+			Led_OFF(CAR_GREEN_LED);
+ dbc:	80 e0       	ldi	r24, 0x00	; 0
+ dbe:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+
+			Led_OFF(PEDESTRIANS_RED_LED);
+ dc2:	85 e0       	ldi	r24, 0x05	; 5
+ dc4:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+			Entry_State=EXIT_PEDESTRIANS;
+ dc8:	10 92 69 00 	sts	0x0069, r1
+ dcc:	0d c0       	rjmp	.+26     	; 0xde8 <Pedestrian_Mode+0x120>
+		}
+		else if(current_peds_led_state==RED)
+ dce:	80 91 61 00 	lds	r24, 0x0061
+ dd2:	82 30       	cpi	r24, 0x02	; 2
+ dd4:	49 f4       	brne	.+18     	; 0xde8 <Pedestrian_Mode+0x120>
+		{
+			Led_OFF(PEDESTRIANS_GREEN_LED);
+ dd6:	83 e0       	ldi	r24, 0x03	; 3
+ dd8:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+			Led_OFF(PEDESTRIANS_YELLOW_LED);
+ ddc:	84 e0       	ldi	r24, 0x04	; 4
+ dde:	0e 94 5b 04 	call	0x8b6	; 0x8b6 <Led_OFF>
+
 			Led_ON(PEDESTRIANS_RED_LED);
- c46:	85 e0       	ldi	r24, 0x05	; 5
- c48:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
+ de2:	85 e0       	ldi	r24, 0x05	; 5
+ de4:	0e 94 02 04 	call	0x804	; 0x804 <Led_ON>
+		}
 	}
 }
+ de8:	cf 91       	pop	r28
+ dea:	df 91       	pop	r29
+ dec:	08 95       	ret
 
-void Pedestrian_Mode(void)
+00000dee <App_Start>:
+
+
+void App_Start(void)
 {
-	while(Current_Mode==PEDESTRIANS_MODE)
- c4c:	80 91 64 00 	lds	r24, 0x0064
- c50:	81 30       	cpi	r24, 0x01	; 1
- c52:	19 f3       	breq	.-58     	; 0xc1a <Pedestrian_Mode+0xa>
-		else
-		{
-			Led_ON(PEDESTRIANS_RED_LED);
-		}
-	}
-}
- c54:	cf 91       	pop	r28
- c56:	df 91       	pop	r29
- c58:	08 95       	ret
-
-00000c5a <App_Init>:
-
-
-void App_Init(void)
-{
- c5a:	df 93       	push	r29
- c5c:	cf 93       	push	r28
- c5e:	cd b7       	in	r28, 0x3d	; 61
- c60:	de b7       	in	r29, 0x3e	; 62
+ dee:	df 93       	push	r29
+ df0:	cf 93       	push	r28
+ df2:	cd b7       	in	r28, 0x3d	; 61
+ df4:	de b7       	in	r29, 0x3e	; 62
 	Led_Init();
- c62:	0e 94 dd 03 	call	0x7ba	; 0x7ba <Led_Init>
+ df6:	0e 94 dd 03 	call	0x7ba	; 0x7ba <Led_Init>
 	TIMER1_Init();
- c66:	0e 94 49 00 	call	0x92	; 0x92 <TIMER1_Init>
+ dfa:	0e 94 49 00 	call	0x92	; 0x92 <TIMER1_Init>
+
+	Dio_ConfigChannel(DIO_PORTC,DIO_CHANNEL0,OUTPUT);
+ dfe:	82 e0       	ldi	r24, 0x02	; 2
+ e00:	60 e0       	ldi	r22, 0x00	; 0
+ e02:	41 e0       	ldi	r20, 0x01	; 1
+ e04:	0e 94 fe 00 	call	0x1fc	; 0x1fc <Dio_ConfigChannel>
+	Dio_ConfigChannel(DIO_PORTC,DIO_CHANNEL1,OUTPUT);
+ e08:	82 e0       	ldi	r24, 0x02	; 2
+ e0a:	61 e0       	ldi	r22, 0x01	; 1
+ e0c:	41 e0       	ldi	r20, 0x01	; 1
+ e0e:	0e 94 fe 00 	call	0x1fc	; 0x1fc <Dio_ConfigChannel>
+	Dio_ConfigChannel(DIO_PORTC,DIO_CHANNEL2,OUTPUT);
+ e12:	82 e0       	ldi	r24, 0x02	; 2
+ e14:	62 e0       	ldi	r22, 0x02	; 2
+ e16:	41 e0       	ldi	r20, 0x01	; 1
+ e18:	0e 94 fe 00 	call	0x1fc	; 0x1fc <Dio_ConfigChannel>
+
+	ExtInt_SnsCtrlSet(EXT_INT0,RISING_EDGE_MODE);
+ e1c:	80 e0       	ldi	r24, 0x00	; 0
+ e1e:	63 e0       	ldi	r22, 0x03	; 3
+ e20:	0e 94 ea 00 	call	0x1d4	; 0x1d4 <ExtInt_SnsCtrlSet>
+	ExtInt_Enable(EXT_INT0);
+ e24:	80 e0       	ldi	r24, 0x00	; 0
+ e26:	0e 94 c8 00 	call	0x190	; 0x190 <ExtInt_Enable>
 
 	TIMER1_SetPreload(TIMER1_500ms_PRELOAD);
- c6a:	8a e7       	ldi	r24, 0x7A	; 122
- c6c:	91 ee       	ldi	r25, 0xE1	; 225
- c6e:	0e 94 7c 00 	call	0xf8	; 0xf8 <TIMER1_SetPreload>
-
-	ExtInt_SnsCtrlSet(EXT_INT0,LOW_LEVEL_MODE);
- c72:	80 e0       	ldi	r24, 0x00	; 0
- c74:	60 e0       	ldi	r22, 0x00	; 0
- c76:	0e 94 ea 00 	call	0x1d4	; 0x1d4 <ExtInt_SnsCtrlSet>
-	ExtInt_Enable(EXT_INT0);
- c7a:	80 e0       	ldi	r24, 0x00	; 0
- c7c:	0e 94 c8 00 	call	0x190	; 0x190 <ExtInt_Enable>
+ e2a:	8a e7       	ldi	r24, 0x7A	; 122
+ e2c:	91 ee       	ldi	r25, 0xE1	; 225
+ e2e:	0e 94 7c 00 	call	0xf8	; 0xf8 <TIMER1_SetPreload>
 	TIMER1_EnableInterrupt();
- c80:	0e 94 8e 00 	call	0x11c	; 0x11c <TIMER1_EnableInterrupt>
+ e32:	0e 94 8e 00 	call	0x11c	; 0x11c <TIMER1_EnableInterrupt>
 	EnableAllInterrupts();
- c84:	0e 94 aa 00 	call	0x154	; 0x154 <EnableAllInterrupts>
-	Dio_ConfigChannel(DIO_PORTC,DIO_CHANNEL0,OUTPUT);
- c88:	82 e0       	ldi	r24, 0x02	; 2
- c8a:	60 e0       	ldi	r22, 0x00	; 0
- c8c:	41 e0       	ldi	r20, 0x01	; 1
- c8e:	0e 94 fe 00 	call	0x1fc	; 0x1fc <Dio_ConfigChannel>
-	Dio_ConfigChannel(DIO_PORTA,DIO_CHANNEL3,OUTPUT);
- c92:	80 e0       	ldi	r24, 0x00	; 0
- c94:	63 e0       	ldi	r22, 0x03	; 3
- c96:	41 e0       	ldi	r20, 0x01	; 1
- c98:	0e 94 fe 00 	call	0x1fc	; 0x1fc <Dio_ConfigChannel>
+ e36:	0e 94 aa 00 	call	0x154	; 0x154 <EnableAllInterrupts>
+
+	/*Start the App*/
+	TIMER1_Start(TIMER1_CS_1024_PRESCALER);
+ e3a:	85 e0       	ldi	r24, 0x05	; 5
+ e3c:	0e 94 5c 00 	call	0xb8	; 0xb8 <TIMER1_Start>
 }
- c9c:	cf 91       	pop	r28
- c9e:	df 91       	pop	r29
- ca0:	08 95       	ret
+ e40:	cf 91       	pop	r28
+ e42:	df 91       	pop	r29
+ e44:	08 95       	ret
 
-00000ca2 <App_start>:
+00000e46 <App_Running>:
 
-void App_start(void)
+void App_Running(void)
 {
- ca2:	df 93       	push	r29
- ca4:	cf 93       	push	r28
- ca6:	cd b7       	in	r28, 0x3d	; 61
- ca8:	de b7       	in	r29, 0x3e	; 62
+ e46:	df 93       	push	r29
+ e48:	cf 93       	push	r28
+ e4a:	cd b7       	in	r28, 0x3d	; 61
+ e4c:	de b7       	in	r29, 0x3e	; 62
 	Normal_Mode();
- caa:	0e 94 c3 05 	call	0xb86	; 0xb86 <Normal_Mode>
-	Pedestrian_Mode();
- cae:	0e 94 08 06 	call	0xc10	; 0xc10 <Pedestrian_Mode>
-}
- cb2:	cf 91       	pop	r28
- cb4:	df 91       	pop	r29
- cb6:	08 95       	ret
+ e4e:	0e 94 39 06 	call	0xc72	; 0xc72 <Normal_Mode>
 
-00000cb8 <main>:
-//	EnableAllInterrupts();
-//}
+	Pedestrian_Mode();
+ e52:	0e 94 64 06 	call	0xcc8	; 0xcc8 <Pedestrian_Mode>
+}
+ e56:	cf 91       	pop	r28
+ e58:	df 91       	pop	r29
+ e5a:	08 95       	ret
+
+00000e5c <main>:
+#include "App.h"
+
 
 
 int main(void)
 {
- cb8:	df 93       	push	r29
- cba:	cf 93       	push	r28
- cbc:	cd b7       	in	r28, 0x3d	; 61
- cbe:	de b7       	in	r29, 0x3e	; 62
-		App_Init();
- cc0:	0e 94 2d 06 	call	0xc5a	; 0xc5a <App_Init>
+ e5c:	df 93       	push	r29
+ e5e:	cf 93       	push	r28
+ e60:	cd b7       	in	r28, 0x3d	; 61
+ e62:	de b7       	in	r29, 0x3e	; 62
+	App_Start();
+ e64:	0e 94 f7 06 	call	0xdee	; 0xdee <App_Start>
 
-		App_start();
- cc4:	0e 94 51 06 	call	0xca2	; 0xca2 <App_start>
- cc8:	ff cf       	rjmp	.-2      	; 0xcc8 <main+0x10>
+	while(1)
+	{
+		App_Running();
+ e68:	0e 94 23 07 	call	0xe46	; 0xe46 <App_Running>
+ e6c:	fd cf       	rjmp	.-6      	; 0xe68 <main+0xc>
 
-00000cca <_exit>:
- cca:	f8 94       	cli
+00000e6e <_exit>:
+ e6e:	f8 94       	cli
 
-00000ccc <__stop_program>:
- ccc:	ff cf       	rjmp	.-2      	; 0xccc <__stop_program>
+00000e70 <__stop_program>:
+ e70:	ff cf       	rjmp	.-2      	; 0xe70 <__stop_program>

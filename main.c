@@ -7,30 +7,16 @@
 
 #include "App.h"
 
-//ISR(INT0_vect)
-//{
-//	DisableAllInterrupts();
-//	Led_Toggle(CAR_GREEN_LED);
-//	EnableAllInterrupts();
-//}
 
 
 int main(void)
 {
-		App_Init();
-
-		App_start();
-//	Led_Init();
-//
-//	ExtInt_SnsCtrlSet(EXT_INT0,LOW_LEVEL_MODE);
-//	ExtInt_Enable(EXT_INT0);
-//	EnableAllInterrupts();
+	App_Start();
 
 	while(1)
 	{
-		;
+		App_Running();
 	}
 
 	return 0;
 }
-

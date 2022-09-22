@@ -23,8 +23,8 @@
 
 void Normal_Mode(void);
 void Pedestrian_Mode(void);
-void App_Init(void);
-void App_start(void);
+void App_Start(void);
+void App_Running(void);
 
 
 
