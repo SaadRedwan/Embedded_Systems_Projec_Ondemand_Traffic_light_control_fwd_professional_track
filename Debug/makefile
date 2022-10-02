@@ -8,6 +8,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include Test_Models/subdir.mk
 -include MCAL/TIMER1/Src/subdir.mk
 -include MCAL/GLBL_INTERPT/Src/subdir.mk
 -include MCAL/EXT_INT/Src/subdir.mk

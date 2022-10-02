@@ -10,21 +10,21 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "Timer1_Interface.h"
 
 #include "Dio_Interface.h"
 #include "GlblInterrupt_Interface.h"
 #include "ExtInt_Interface.h"
-#include "Timer1.h"
 #include "Led_Interface.h"
 
 #include "App_Types.h"
 
 
 
-void Normal_Mode(void);
-void Pedestrian_Mode(void);
-void App_Start(void);
-void App_Running(void);
+modeRunningErrorState Normal_Mode(void);
+modeRunningErrorState Pedestrian_Mode(void);
+appErrorState App_Start(void);
+appErrorState App_Running(void);
 
 
 

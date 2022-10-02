@@ -26,5 +26,6 @@ MCAL/DIO/Src \
 MCAL/EXT_INT/Src \
 MCAL/GLBL_INTERPT/Src \
 MCAL/TIMER1/Src \
+Test_Models \
 . \
 

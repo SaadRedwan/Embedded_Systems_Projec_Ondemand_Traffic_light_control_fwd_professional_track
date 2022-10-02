@@ -140,7 +140,7 @@ ISR(INT0_vect)
 	EnableAllInterrupts();
 }
 
-void Normal_Mode(void)
+modeRunningErrorState Normal_Mode(void)
 {
 	if(Current_Mode==NORMAL_MODE)
 	{
@@ -160,9 +160,10 @@ void Normal_Mode(void)
 			Led_ON(CAR_RED_LED);
 		}
 	}
+	return MODE_SUCCESS;
 }
 
-void Pedestrian_Mode(void)
+modeRunningErrorState Pedestrian_Mode(void)
 {
 	if(Current_Mode==PEDESTRIANS_MODE)
 	{
@@ -222,10 +223,11 @@ void Pedestrian_Mode(void)
 			Led_ON(PEDESTRIANS_RED_LED);
 		}
 	}
+	return MODE_SUCCESS;
 }
 
 
-void App_Start(void)
+appErrorState App_Start(void)
 {
 	Led_Init();
 	TIMER1_Init();
@@ -243,11 +245,15 @@ void App_Start(void)
 
 	/*Start the App*/
 	TIMER1_Start(TIMER1_CS_1024_PRESCALER);
+
+	return APP_SUCCESS;
 }
 
-void App_Running(void)
+appErrorState App_Running(void)
 {
 	Normal_Mode();
 
 	Pedestrian_Mode();
+
+	return APP_SUCCESS;
 }

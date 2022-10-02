@@ -11,4 +11,11 @@
 
 #define TIMER1_OPERATION_MODE TIMER1_MODE_INTERVAL
 
+
+typedef enum
+ {
+	TIMER1_FAIL,
+	TIMER1_SUCCESS
+ }timer1ErrorState;
+
 #endif

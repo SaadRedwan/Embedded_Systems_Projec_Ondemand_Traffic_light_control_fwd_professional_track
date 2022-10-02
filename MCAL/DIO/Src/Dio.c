@@ -7,6 +7,12 @@
 
 #include "Dio_Interface.h"
 
+/****************************************************************************************
+* \Syntax          : dioErrorState Dio_ConfigChannel(void)
+* \Description     : This function configure the pin of a port with input or output state
+*****************************************************************************************/
+
+
 dioErrorState Dio_ConfigChannel(Dio_Port port,Dio_Channel channel, Dio_Direction direction)
 {
 	dioErrorState retResult = DIO_FAIL;
@@ -61,6 +67,12 @@ dioErrorState Dio_ConfigChannel(Dio_Port port,Dio_Channel channel, Dio_Direction
 
 	return retResult;
 }
+
+/****************************************************************************************
+* \Syntax          : dioErrorState Dio_WriteChannel(void)
+* \Description     : This function write the pin with high or low level
+*****************************************************************************************/
+
 dioErrorState Dio_WriteChannel(Dio_Port port,Dio_Channel channel, Dio_Level level)
 {
 	dioErrorState retResult = DIO_FAIL;
@@ -115,6 +127,7 @@ dioErrorState Dio_WriteChannel(Dio_Port port,Dio_Channel channel, Dio_Level leve
 
 	return retResult;
 }
+/*
 Dio_Level Dio_ReadChannel(Dio_Port port,Dio_Channel channel)
 {
 	Dio_Level ret_level;
@@ -135,6 +148,12 @@ Dio_Level Dio_ReadChannel(Dio_Port port,Dio_Channel channel)
 	}
 	return ret_level;
 }
+*/
+
+/****************************************************************************************
+* \Syntax          : dioErrorState Dio_FlipChannel(void)
+* \Description     : This function toggle the current pin state
+*****************************************************************************************/
 
 dioErrorState Dio_FlipChannel(Dio_Port port,Dio_Channel channel)
 {

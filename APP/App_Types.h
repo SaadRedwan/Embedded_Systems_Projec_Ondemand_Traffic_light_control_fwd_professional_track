@@ -21,4 +21,16 @@ typedef enum
 	RED
 }running_led_state;
 
+typedef enum
+ {
+ 	APP_FAIL,
+	APP_SUCCESS
+ }appErrorState;
+
+ typedef enum
+  {
+  	MODE_FAIL,
+ 	MODE_SUCCESS
+  }modeRunningErrorState;
+
 #endif /* APP_APP_TYPES_H_ */

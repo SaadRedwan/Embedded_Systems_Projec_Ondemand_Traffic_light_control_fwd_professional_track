@@ -17,4 +17,10 @@ typedef enum {
 	PEDESTRIANS_RED_LED,
 }Led_ID;
 
+typedef enum
+ {
+ 	LED_FAIL,
+	LED_SUCCESS
+ }ledErrorState;
+
 #endif /* HAL_LED_INC_LED_TYPES_H_ */

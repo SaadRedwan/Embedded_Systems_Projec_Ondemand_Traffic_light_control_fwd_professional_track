@@ -7,7 +7,13 @@
 
 #include "Led_Interface.h"
 
-void Led_Init(void)
+
+/******************************************************************************
+* \Syntax          : ledErrorState Led_Init(void)
+* \Description     : This function configure the pins of leds of the system
+*******************************************************************************/
+
+ledErrorState Led_Init(void)
 {
 	Dio_ConfigChannel(CAR_PORT, CAR_GREEN_CHANNEL, OUTPUT);
 	Dio_ConfigChannel(CAR_PORT, CAR_YELLOW_CHANNEL, OUTPUT);
@@ -16,8 +22,15 @@ void Led_Init(void)
 	Dio_ConfigChannel(PEDESTRIANS_PORT, PEDESTRIANS_GREEN_CHANNEL, OUTPUT);
 	Dio_ConfigChannel(PEDESTRIANS_PORT, PEDESTRIANS_YELLOW_CHANNEL, OUTPUT);
 	Dio_ConfigChannel(PEDESTRIANS_PORT, PEDESTRIANS_RED_CHANNEL, OUTPUT);
+	return LED_SUCCESS;
 }
-void Led_ON(Led_ID led)
+
+/******************************************************************************
+* \Syntax          : ledErrorState Led_ON(void)
+* \Description     : This function put the led in ON state
+*******************************************************************************/
+
+ledErrorState Led_ON(Led_ID led)
 {
 	switch (led)
 	{
@@ -40,8 +53,15 @@ void Led_ON(Led_ID led)
 		Dio_WriteChannel(PEDESTRIANS_PORT,PEDESTRIANS_RED_CHANNEL,STD_HIGH);
 		break;
 	}
+	return LED_SUCCESS;
 }
-void Led_OFF(Led_ID led)
+
+/******************************************************************************
+* \Syntax          : ledErrorState Led_OFF(void)
+* \Description     : This function put the led in OFF state
+*******************************************************************************/
+
+ledErrorState Led_OFF(Led_ID led)
 {
 	switch (led)
 	{
@@ -64,8 +84,15 @@ void Led_OFF(Led_ID led)
 		Dio_WriteChannel(PEDESTRIANS_PORT,PEDESTRIANS_RED_CHANNEL,STD_LOW);
 		break;
 	}
+	return LED_SUCCESS;
 }
-void Led_Toggle(Led_ID led)
+
+/******************************************************************************
+* \Syntax          : ledErrorState Led_Toggle(void)
+* \Description     : This function toggle the current led state
+*******************************************************************************/
+
+ledErrorState Led_Toggle(Led_ID led)
 {
 	switch (led)
 	{
@@ -88,4 +115,5 @@ void Led_Toggle(Led_ID led)
 		Dio_FlipChannel(PEDESTRIANS_PORT,PEDESTRIANS_RED_CHANNEL);
 		break;
 	}
+	return LED_SUCCESS;
 }

@@ -7,15 +7,36 @@
 
 #include "ExtInt_Interface.h"
 
-void ExtInt_Enable(Int_ID extIntID)
+/******************************************************************************
+* \Syntax          : extIntErrorState ExtInt_Enable(void)
+* \Description     : This function enable external interrupt INT0
+*******************************************************************************/
+
+extIntErrorState ExtInt_Enable(Int_ID extIntID)
 {
 		SET_BIT(EXTINT_GICR_REG,EXT_INT0_EN_BIT);
+		return EXT_INT_SUCCESS;
 }
-void ExtInt_Disable(Int_ID extIntID)
+
+/******************************************************************************
+* \Syntax          : extIntErrorState ExtInt_Enable(void)
+* \Description     : This function disable external interrupt INT0
+*******************************************************************************/
+
+extIntErrorState ExtInt_Disable(Int_ID extIntID)
 {
 		CLEAR_BIT(EXTINT_GICR_REG,EXT_INT0_EN_BIT);
+		return EXT_INT_SUCCESS;
 }
-void ExtInt_SnsCtrlSet(Int_ID extIntID,Sense_Mode_ID intSense)
+
+/******************************************************************************
+* \Syntax          : extIntErrorState ExtInt_Enable(void)
+* \Description     : This function define the sense mode of
+* the external interrupt  INT0 high level, any level, rising edge or falling edge
+*******************************************************************************/
+
+extIntErrorState ExtInt_SnsCtrlSet(Int_ID extIntID,Sense_Mode_ID intSense)
 {
 		EXTINT_MCUCR_REG|=intSense<<EXT_INT0_SENSE_BIT;
+		return EXT_INT_SUCCESS;
 }

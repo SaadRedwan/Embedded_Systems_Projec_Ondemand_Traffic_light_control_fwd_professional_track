@@ -21,10 +21,10 @@ typedef enum
 	RISING_EDGE_MODE
 }Sense_Mode_ID;
 
-//typedef enum
-// {
-// 	EXT_INT_FAIL,
-//	EXT_INT_SUCCESS
-// }extIntErrorState;
+typedef enum
+ {
+ 	EXT_INT_FAIL,
+	EXT_INT_SUCCESS
+ }extIntErrorState;
 
 #endif /* MCAL_EXT_INT_INC_EXTINT_TYPES_H_ */
